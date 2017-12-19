@@ -1,6 +1,8 @@
 const http = require('http');
 const url = require('url');
 const fs = require('fs');
+const path = require('path');
+const config = require('./config');
 
 function lrd(){
 	this.hostname = 'localhost';
@@ -27,11 +29,26 @@ function lrd(){
 		this.query = url.parse(req.url,true).query;
 	};
 
+	this.readStatic = function(callback){
+		fs.readFile();
+	};
+
+	this.setHead = function(req,res){
+		var pageName = path.basename(req.url);
+		var arr = pageName.split('.');
+		var	contentType = config.contentType[arr[arr.length-1]];
+		return contentType || 'text/plain';
+	};
+
 	this.init = function(){
+		var _this = this;
 		this.server = http.createServer((req,res) => {
-				res.writeHead(200, {'Content-Type': 'text/html' });
-				fs.readFile('./view/index.html',(err,data) => {
-					if(err) throw err;
+				var requestPage = path.basename(req.url);
+				var contentType = _this.setHead(req,res);
+				res.writeHead(200, {'Content-Type': contentType });
+				debugger;
+				fs.readFile('./view/'+requestPage,(err,data) => {
+					if(err) res.end("404");
 					res.end(data);
 				});
 		});
